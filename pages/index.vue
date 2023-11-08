@@ -133,6 +133,28 @@ export default defineComponent({
 						url: 'https://ankr.com/',
 					},
 				},
+				arb: {
+					name: 'Arbitrum',
+					endpoint: 'https://arb.node.visvirial.com/',
+					local: -1,
+					remote: -1,
+					tolerance: 50,
+					source: {
+						name: 'Ankr',
+						url: 'https://ankr.com/',
+					},
+				},
+				op: {
+					name: 'Optimism',
+					endpoint: 'https://op.node.visvirial.com/',
+					local: -1,
+					remote: -1,
+					tolerance: 50,
+					source: {
+						name: 'Ankr',
+						url: 'https://ankr.com/',
+					},
+				},
 				tron: {
 					name: 'Tron',
 					endpoint: 'https://tron.node.visvirial.com/',
@@ -186,7 +208,7 @@ export default defineComponent({
 				})());
 			}
 			// EVM.
-			const ankrPostfix: { [chain: string]: string } = { eth: 'eth', bsc: 'bsc' };
+			const ankrPostfix: { [chain: string]: string } = { eth: 'eth', bsc: 'bsc', arb: 'arbitrum', op: 'optimism' };
 			for(const chain in ankrPostfix) {
 				promises.push((async () => {
 					try {
