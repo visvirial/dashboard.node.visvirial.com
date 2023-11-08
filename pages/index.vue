@@ -2,7 +2,7 @@
 	<div>
 		<h1>Blockchain Nodes operated by @visvirial</h1>
 		<div class="text-center">
-			Last update: {{ ((now - lastUpdate) / 1000).toFixed(1) }} secs ago.
+			Last update: {{ lastUpdate < 0 ? 'unknown' : ((now - lastUpdate) / 1000).toFixed(1) + ' secs ago' }}.
 		</div>
 		<v-table>
 			<thead>
@@ -54,7 +54,7 @@ export default defineComponent({
 	data() {
 		return {
 			now: Date.now(),
-			lastUpdate: 0,
+			lastUpdate: -1,
 			chains: {
 				btc: {
 					name: 'Bitcoin (Mainnet)',
