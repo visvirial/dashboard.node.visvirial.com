@@ -152,56 +152,71 @@ export default defineComponent({
 			this.now = Date.now();
 		},
 		async updateAll() {
-			await Promise.all([
-				// Bitcoin (Mainnnet).
-				(async () => {
-					this.chains.btc.local = (await (await fetch('https://btc.node.visvirial.com/rest/chaininfo.json')).json()).blocks;
-					this.chains.btc.remote = await (await fetch('https://mempool.space/api/blocks/tip/height')).json();
-				})(),
-				// Bitcoin (Testnet).
-				(async () => {
-					this.chains.tbtc.local = (await (await fetch('https://tbtc.node.visvirial.com/rest/chaininfo.json')).json()).blocks;
-					this.chains.tbtc.remote = await (await fetch('https://mempool.space/testnet/api/blocks/tip/height')).json();
-				})(),
-				// Bitcoin (Signet).
-				(async () => {
-					this.chains.sbtc.local = (await (await fetch('https://sbtc.node.visvirial.com/rest/chaininfo.json')).json()).blocks;
-					this.chains.sbtc.remote = await (await fetch('https://mempool.space/signet/api/blocks/tip/height')).json();
-				})(),
-				// Monacoin (Mainnet).
-				(async () => {
-					this.chains.mona.local = (await (await fetch('https://mona.node.visvirial.com/rest/chaininfo.json')).json()).blocks;
-					this.chains.mona.remote = (await (await fetch('https://blockbook.electrum-mona.org/api/')).json()).backend.blocks;
-				})(),
-				// Monacoin (Testnet).
-				(async () => {
-					this.chains.tmona.local = (await (await fetch('https://tmona.node.visvirial.com/rest/chaininfo.json')).json()).blocks;
-					this.chains.tmona.remote = (await (await fetch('https://testnet-blockbook.electrum-mona.org/api/')).json()).backend.blocks;
-				})(),
-				// Ethereum.
-				(async () => {
-					const providerLocal = new ethers.JsonRpcProvider('https://eth.node.visvirial.com/');
-					this.chains.eth.local = await providerLocal.getBlockNumber();
-					const providerRemote = new ethers.JsonRpcProvider('https://rpc.ankr.com/eth');
-					this.chains.eth.remote = await providerRemote.getBlockNumber();
-				})(),
-				// BSC.
-				(async () => {
-					const providerLocal = new ethers.JsonRpcProvider('https://bsc.node.visvirial.com/');
-					this.chains.bsc.local = await providerLocal.getBlockNumber();
-					const providerRemote = new ethers.JsonRpcProvider('https://rpc.ankr.com//bsc');
-					this.chains.bsc.remote = await providerRemote.getBlockNumber();
-				})(),
-				// Tron.
-				(async () => {
+			const promises: Promise<void>[] = [];
+			// Bitcoin.
+			const mempoolPrefix: { [chain: string]: string } = { btc: '', tbtc: 'testnet/', sbtc: 'signet/' };
+			for(const chain in mempoolPrefix) {
+				promises.push((async () => {
+					try {
+						this.chains[chain].local = (await (await fetch(`https://${chain}.node.visvirial.com/rest/chaininfo.json`)).json()).blocks;
+					} catch (e) {
+						this.chains[chain].local = -1;
+					}
+					try {
+						this.chains[chain].remote = await (await fetch(`https://mempool.space/${mempoolPrefix[chain]}api/blocks/tip/height`)).json();
+					} catch (e) {
+						this.chains[chain].remote = -1;
+					}
+				})());
+			}
+			// Monacoin.
+			const electrumMonaPrefix: { [chain: string]: string } = { mona: '', tmona: 'testnet-' };
+			for(const chain in electrumMonaPrefix) {
+				promises.push((async () => {
+					try {
+						this.chains[chain].local = (await (await fetch(`https://${chain}.node.visvirial.com/rest/chaininfo.json`)).json()).blocks;
+					} catch (e) {
+						this.chains[chain].local = -1;
+					}
+					try {
+						this.chains[chain].remote = (await (await fetch(`https://${electrumMonaPrefix[chain]}blockbook.electrum-mona.org/api/`)).json()).backend.blocks;
+					} catch (e) {
+						this.chains[chain].remote = -1;
+					}
+				})());
+			}
+			// EVM.
+			const ankrPostfix: { [chain: string]: string } = { eth: 'eth', bsc: 'bsc' };
+			for(const chain in ankrPostfix) {
+				promises.push((async () => {
+					try {
+						const providerLocal = new ethers.JsonRpcProvider(`https://${chain}.node.visvirial.com/`);
+						this.chains[chain].local = await providerLocal.getBlockNumber();
+					} catch (e) {
+						this.chains[chain].local = -1;
+					}
+					try {
+						const providerRemote = new ethers.JsonRpcProvider(`https://rpc.ankr.com/${ankrPostfix[chain]}`);
+						this.chains[chain].remote = await providerRemote.getBlockNumber();
+					} catch (e) {
+						this.chains[chain].remote = -1;
+					}
+				})());
+			}
+			// Tron.
+			promises.push((async () => {
+				try {
 					this.chains.tron.local = (await (await fetch('https://tron.node.visvirial.com/wallet/getnowblock')).json()).block_header.raw_data.number;
+				} catch (e) {
+					this.chains.tron.local = -1;
+				}
+				try {
 					this.chains.tron.remote = (await (await fetch('https://apilist.tronscan.org/api/block/statistic')).json()).whole_block_count;
-				})(),
-				/*
-				(async () => {
-				})(),
-				*/
-			]);
+				} catch (e) {
+					this.chains.tron.remote = -1;
+				}
+			})());
+			await Promise.all(promises);
 			this.lastUpdate = Date.now();
 		},
 	},
