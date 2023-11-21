@@ -155,6 +155,17 @@ export default defineComponent({
 						url: 'https://ankr.com/',
 					},
 				},
+				avax: {
+					name: 'Avalanche',
+					endpoint: 'https://avax.node.visvirial.com/',
+					local: -1,
+					remote: -1,
+					tolerance: 50,
+					source: {
+						name: 'Ankr',
+						url: 'https://ankr.com/',
+					},
+				},
 				tron: {
 					name: 'Tron',
 					endpoint: 'https://tron.node.visvirial.com/',
@@ -208,11 +219,11 @@ export default defineComponent({
 				})());
 			}
 			// EVM.
-			const ankrPostfix: { [chain: string]: string } = { eth: 'eth', bsc: 'bsc', arb: 'arbitrum', op: 'optimism' };
+			const ankrPostfix: { [chain: string]: string } = { eth: 'eth', bsc: 'bsc', arb: 'arbitrum', op: 'optimism', avax: 'avalanche' };
 			for(const chain in ankrPostfix) {
 				promises.push((async () => {
 					try {
-						const providerLocal = new ethers.JsonRpcProvider(`https://${chain}.node.visvirial.com/`);
+						const providerLocal = new ethers.JsonRpcProvider(`https://${chain}.node.visvirial.com/` + (chain === 'avax' ? 'ext/bc/C/rpc' : ''));
 						this.chains[chain].local = await providerLocal.getBlockNumber();
 					} catch (e) {
 						this.chains[chain].local = -1;
@@ -243,8 +254,8 @@ export default defineComponent({
 		},
 	},
 	async mounted() {
-		this.updateAll();
-		setInterval(this.updateAll, 10_000);
+		await this.updateAll();
+		setInterval(this.updateAll, 60_000);
 		setInterval(this.updateLastUpdate, 100);
 	},
 });
