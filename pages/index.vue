@@ -122,6 +122,17 @@ export default defineComponent({
 						url: 'https://ankr.com/',
 					},
 				},
+				polygon: {
+					name: 'Polygon',
+					endpoint: 'https://polygon.node.visvirial.com/',
+					local: -1,
+					remote: -1,
+					tolerance: 30,
+					source: {
+						name: 'Ankr',
+						url: 'https://ankr.com/',
+					},
+				},
 				bsc: {
 					name: 'Binance Smart Chain',
 					endpoint: 'https://bsc.node.visvirial.com/',
@@ -219,7 +230,7 @@ export default defineComponent({
 				})());
 			}
 			// EVM.
-			const ankrPostfix: { [chain: string]: string } = { eth: 'eth', bsc: 'bsc', arb: 'arbitrum', op: 'optimism', avax: 'avalanche' };
+			const ankrPostfix: { [chain: string]: string } = { eth: 'eth', polygon: 'polygon', bsc: 'bsc', arb: 'arbitrum', op: 'optimism', avax: 'avalanche' };
 			for(const chain in ankrPostfix) {
 				promises.push((async () => {
 					try {
