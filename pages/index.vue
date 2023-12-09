@@ -2,7 +2,7 @@
 	<div>
 		<h1>Blockchain Nodes operated by @visvirial</h1>
 		<div class="text-center">
-			Last update: {{ lastUpdate < 0 ? 'unknown' : ((now - lastUpdate) / 1000).toFixed(1) + ' secs ago' }}.
+			Last update: {{ lastUpdate < 0 ? '???' : ((now - lastUpdate) / 1000).toFixed(1) + ' secs ago' }}.
 		</div>
 		<v-table>
 			<thead>
@@ -19,9 +19,9 @@
 				<tr v-for="(chain, name) in chains">
 					<td>{{ chain.name }}</td>
 					<td>{{ chain.endpoint }}</td>
-					<td><BlockHeight :value=chain.local /></td>
-					<td><BlockHeight :value=chain.remote /></td>
-					<td><HeightDifference :local=chain.local :remote=chain.remote :tolerance=chain.tolerance /></td>
+					<td><BlockHeight :value=chain.local.current /> (<BlockDifference :prev=chain.local.prev :current=chain.local.current />)</td>
+					<td><BlockHeight :value=chain.remote.current /> (<BlockDifference :prev=chain.remote.prev :current=chain.remote.current />)</td>
+					<td><HeightDifference :local=chain.local.current :remote=chain.remote.current :tolerance=chain.tolerance /></td>
 					<td><a :href=chain.source.url target="_blank">{{ chain.source.name }}</a></td>
 				</tr>
 			</tbody>
@@ -38,11 +38,19 @@
 import { defineComponent } from 'vue';
 import { ethers } from 'ethers';
 
+const UPDATE_INTERVAL = 60 * 1000;
+
 const Chain = {
 	name: String,
 	endpoint: String,
-	local: Number,
-	remote: Number,
+	local: {
+		prev: Number,
+		current: Number,
+	},
+	remote: {
+		prev: Number,
+		current: Number,
+	},
 	tolerance: Number,
 	source: {
 		name: String,
@@ -59,8 +67,14 @@ export default defineComponent({
 				btc: {
 					name: 'Bitcoin (Mainnet)',
 					endpoint: 'https://btc.node.visvirial.com/',
-					local: -1,
-					remote: -1,
+					local: {
+						prev: -1,
+						current: -1,
+					},
+					remote: {
+						prev: -1,
+						current: -1,
+					},
 					tolerance: 5,
 					source: {
 						name: 'mempool',
@@ -70,8 +84,14 @@ export default defineComponent({
 				tbtc: {
 					name: 'Bitcoin (Testnet)',
 					endpoint: 'https://tbtc.node.visvirial.com/',
-					local: -1,
-					remote: -1,
+					local: {
+						prev: -1,
+						current: -1,
+					},
+					remote: {
+						prev: -1,
+						current: -1,
+					},
 					tolerance: 5,
 					source: {
 						name: 'mempool',
@@ -81,8 +101,14 @@ export default defineComponent({
 				sbtc: {
 					name: 'Bitcoin (Signet)',
 					endpoint: 'https://sbtc.node.visvirial.com/',
-					local: -1,
-					remote: -1,
+					local: {
+						prev: -1,
+						current: -1,
+					},
+					remote: {
+						prev: -1,
+						current: -1,
+					},
 					tolerance: 5,
 					source: {
 						name: 'mempool',
@@ -92,8 +118,14 @@ export default defineComponent({
 				mona: {
 					name: 'Monacoin (Mainnet)',
 					endpoint: 'https://mona.node.visvirial.com/',
-					local: -1,
-					remote: -1,
+					local: {
+						prev: -1,
+						current: -1,
+					},
+					remote: {
+						prev: -1,
+						current: -1,
+					},
 					tolerance: 10,
 					source: {
 						name: 'Trezor Monacoin Explorer',
@@ -103,8 +135,14 @@ export default defineComponent({
 				tmona: {
 					name: 'Monacoin (Testnet)',
 					endpoint: 'https://tmona.node.visvirial.com/',
-					local: -1,
-					remote: -1,
+					local: {
+						prev: -1,
+						current: -1,
+					},
+					remote: {
+						prev: -1,
+						current: -1,
+					},
 					tolerance: 10,
 					source: {
 						name: 'Trezor Monacoin Testnet Explorer',
@@ -114,8 +152,14 @@ export default defineComponent({
 				eth: {
 					name: 'Ethereum',
 					endpoint: 'https://eth.node.visvirial.com/',
-					local: -1,
-					remote: -1,
+					local: {
+						prev: -1,
+						current: -1,
+					},
+					remote: {
+						prev: -1,
+						current: -1,
+					},
 					tolerance: 30,
 					source: {
 						name: 'Ankr',
@@ -125,8 +169,14 @@ export default defineComponent({
 				polygon: {
 					name: 'Polygon',
 					endpoint: 'https://polygon.node.visvirial.com/',
-					local: -1,
-					remote: -1,
+					local: {
+						prev: -1,
+						current: -1,
+					},
+					remote: {
+						prev: -1,
+						current: -1,
+					},
 					tolerance: 30,
 					source: {
 						name: 'Ankr',
@@ -136,8 +186,14 @@ export default defineComponent({
 				bsc: {
 					name: 'Binance Smart Chain',
 					endpoint: 'https://bsc.node.visvirial.com/',
-					local: -1,
-					remote: -1,
+					local: {
+						prev: -1,
+						current: -1,
+					},
+					remote: {
+						prev: -1,
+						current: -1,
+					},
 					tolerance: 50,
 					source: {
 						name: 'Ankr',
@@ -147,8 +203,14 @@ export default defineComponent({
 				arb: {
 					name: 'Arbitrum',
 					endpoint: 'https://arb.node.visvirial.com/',
-					local: -1,
-					remote: -1,
+					local: {
+						prev: -1,
+						current: -1,
+					},
+					remote: {
+						prev: -1,
+						current: -1,
+					},
 					tolerance: 50,
 					source: {
 						name: 'Ankr',
@@ -158,8 +220,14 @@ export default defineComponent({
 				op: {
 					name: 'Optimism',
 					endpoint: 'https://op.node.visvirial.com/',
-					local: -1,
-					remote: -1,
+					local: {
+						prev: -1,
+						current: -1,
+					},
+					remote: {
+						prev: -1,
+						current: -1,
+					},
 					tolerance: 50,
 					source: {
 						name: 'Ankr',
@@ -169,8 +237,14 @@ export default defineComponent({
 				avax: {
 					name: 'Avalanche',
 					endpoint: 'https://avax.node.visvirial.com/',
-					local: -1,
-					remote: -1,
+					local: {
+						prev: -1,
+						current: -1,
+					},
+					remote: {
+						prev: -1,
+						current: -1,
+					},
 					tolerance: 50,
 					source: {
 						name: 'Ankr',
@@ -180,8 +254,14 @@ export default defineComponent({
 				tron: {
 					name: 'Tron',
 					endpoint: 'https://tron.node.visvirial.com/',
-					local: -1,
-					remote: -1,
+					local: {
+						prev: -1,
+						current: -1,
+					},
+					remote: {
+						prev: -1,
+						current: -1,
+					},
 					tolerance: 100,
 					source: {
 						name: 'TRONSCAN',
@@ -192,6 +272,15 @@ export default defineComponent({
 		};
 	},
 	methods: {
+		setHeight(chain: string, local: boolean, height: number) {
+			if(local) {
+				this.chains[chain].local.prev = this.chains[chain].local.current;
+				this.chains[chain].local.current = height;
+			} else {
+				this.chains[chain].remote.prev = this.chains[chain].remote.current;
+				this.chains[chain].remote.current = height;
+			}
+		},
 		updateLastUpdate() {
 			this.now = Date.now();
 		},
@@ -202,14 +291,16 @@ export default defineComponent({
 			for(const chain in mempoolPrefix) {
 				promises.push((async () => {
 					try {
-						this.chains[chain].local = (await (await fetch(`https://${chain}.node.visvirial.com/rest/chaininfo.json`)).json()).blocks;
+						this.setHeight(chain, true, (await (await fetch(`https://${chain}.node.visvirial.com/rest/chaininfo.json`)).json()).blocks);
 					} catch (e) {
-						this.chains[chain].local = -1;
+						this.setHeight(chain, true, -1);
 					}
+				})());
+				promises.push((async () => {
 					try {
-						this.chains[chain].remote = await (await fetch(`https://mempool.space/${mempoolPrefix[chain]}api/blocks/tip/height`)).json();
+						this.setHeight(chain, false, await (await fetch(`https://mempool.space/${mempoolPrefix[chain]}api/blocks/tip/height`)).json());
 					} catch (e) {
-						this.chains[chain].remote = -1;
+						this.setHeight(chain, false, -1);
 					}
 				})());
 			}
@@ -218,14 +309,16 @@ export default defineComponent({
 			for(const chain in electrumMonaPrefix) {
 				promises.push((async () => {
 					try {
-						this.chains[chain].local = (await (await fetch(`https://${chain}.node.visvirial.com/rest/chaininfo.json`)).json()).blocks;
+						this.setHeight(chain, true, (await (await fetch(`https://${chain}.node.visvirial.com/rest/chaininfo.json`)).json()).blocks);
 					} catch (e) {
-						this.chains[chain].local = -1;
+						this.setHeight(chain, true, -1);
 					}
+				})());
+				promises.push((async () => {
 					try {
-						this.chains[chain].remote = (await (await fetch(`https://${electrumMonaPrefix[chain]}blockbook.electrum-mona.org/api/`)).json()).backend.blocks;
+						this.setHeight(chain, false, (await (await fetch(`https://${electrumMonaPrefix[chain]}blockbook.electrum-mona.org/api/`)).json()).backend.blocks);
 					} catch (e) {
-						this.chains[chain].remote = -1;
+						this.setHeight(chain, false, -1);
 					}
 				})());
 			}
@@ -235,29 +328,33 @@ export default defineComponent({
 				promises.push((async () => {
 					try {
 						const providerLocal = new ethers.JsonRpcProvider(`https://${chain}.node.visvirial.com/` + (chain === 'avax' ? 'ext/bc/C/rpc' : ''));
-						this.chains[chain].local = await providerLocal.getBlockNumber();
+						this.setHeight(chain, true, await providerLocal.getBlockNumber());
 					} catch (e) {
-						this.chains[chain].local = -1;
+						this.setHeight(chain, true, -1);
 					}
+				})());
+				promises.push((async () => {
 					try {
 						const providerRemote = new ethers.JsonRpcProvider(`https://rpc.ankr.com/${ankrPostfix[chain]}`);
-						this.chains[chain].remote = await providerRemote.getBlockNumber();
+						this.setHeight(chain, false, await providerRemote.getBlockNumber());
 					} catch (e) {
-						this.chains[chain].remote = -1;
+						this.setHeight(chain, false, -1);
 					}
 				})());
 			}
 			// Tron.
 			promises.push((async () => {
 				try {
-					this.chains.tron.local = (await (await fetch('https://tron.node.visvirial.com/wallet/getnowblock')).json()).block_header.raw_data.number;
+					this.setHeight('tron', true, (await (await fetch('https://tron.node.visvirial.com/wallet/getnowblock')).json()).block_header.raw_data.number);
 				} catch (e) {
-					this.chains.tron.local = -1;
+					this.setHeight('tron', true, -1);
 				}
+			})());
+			promises.push((async () => {
 				try {
-					this.chains.tron.remote = (await (await fetch('https://apilist.tronscan.org/api/block/statistic')).json()).whole_block_count;
+					this.setHeight('tron', false, (await (await fetch('https://apilist.tronscan.org/api/block/statistic')).json()).whole_block_count);
 				} catch (e) {
-					this.chains.tron.remote = -1;
+					this.setHeight('tron', false, -1);
 				}
 			})());
 			await Promise.all(promises);
@@ -266,7 +363,7 @@ export default defineComponent({
 	},
 	async mounted() {
 		await this.updateAll();
-		setInterval(this.updateAll, 60_000);
+		setInterval(this.updateAll, UPDATE_INTERVAL);
 		setInterval(this.updateLastUpdate, 100);
 	},
 });

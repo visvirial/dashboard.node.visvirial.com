@@ -5,7 +5,7 @@
 	<span v-else style="color:red;">
 		Bad
 	</span>:
-	{{ local < 0 ? '???' : (local - remote).toLocaleString() }}
+	{{ local < 0 || remote < 0 ? '???' : (local - remote).toLocaleString() }}
 </template>
 
 <script lang="ts">
