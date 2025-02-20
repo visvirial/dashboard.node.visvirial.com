@@ -82,7 +82,7 @@ export default defineComponent({
 					},
 				},
 				tbtc: {
-					name: 'Bitcoin (Testnet)',
+					name: 'Bitcoin (Testnet3)',
 					endpoint: 'https://tbtc.node.visvirial.com/',
 					local: {
 						prev: -1,
@@ -96,6 +96,23 @@ export default defineComponent({
 					source: {
 						name: 'mempool',
 						url: 'https://mempool.space/testnet',
+					},
+				},
+				t4btc: {
+					name: 'Bitcoin (Testnet4)',
+					endpoint: 'https://t4btc.node.visvirial.com/',
+					local: {
+						prev: -1,
+						current: -1,
+					},
+					remote: {
+						prev: -1,
+						current: -1,
+					},
+					tolerance: 5,
+					source: {
+						name: 'mempool',
+						url: 'https://mempool.space/testnet4',
 					},
 				},
 				sbtc: {
@@ -166,6 +183,7 @@ export default defineComponent({
 						url: 'https://ankr.com/',
 					},
 				},
+				/*
 				polygon: {
 					name: 'Polygon',
 					endpoint: 'https://polygon.node.visvirial.com/',
@@ -268,6 +286,7 @@ export default defineComponent({
 						url: 'https://tronscan.org/',
 					},
 				},
+				*/
 			},
 		};
 	},
@@ -287,7 +306,12 @@ export default defineComponent({
 		async updateAll() {
 			const promises: Promise<void>[] = [];
 			// Bitcoin.
-			const mempoolPrefix: { [chain: string]: string } = { btc: '', tbtc: 'testnet/', sbtc: 'signet/' };
+			const mempoolPrefix: { [chain: string]: string } = {
+				btc: '',
+				tbtc: 'testnet/',
+				t4btc: 'testnet4/',
+				sbtc: 'signet/',
+			};
 			for(const chain in mempoolPrefix) {
 				promises.push((async () => {
 					try {
@@ -305,7 +329,10 @@ export default defineComponent({
 				})());
 			}
 			// Monacoin.
-			const electrumMonaPrefix: { [chain: string]: string } = { mona: '', tmona: 'testnet-' };
+			const electrumMonaPrefix: { [chain: string]: string } = {
+				mona: '',
+				tmona: 'testnet-',
+			};
 			for(const chain in electrumMonaPrefix) {
 				promises.push((async () => {
 					try {
@@ -323,7 +350,16 @@ export default defineComponent({
 				})());
 			}
 			// EVM.
-			const ankrPostfix: { [chain: string]: string } = { eth: 'eth', polygon: 'polygon', bsc: 'bsc', arb: 'arbitrum', op: 'optimism', avax: 'avalanche' };
+			const ankrPostfix: { [chain: string]: string } = {
+				eth: 'eth',
+				/*
+				polygon: 'polygon',
+				bsc: 'bsc',
+				arb: 'arbitrum',
+				op: 'optimism',
+				avax: 'avalanche',
+				*/
+			};
 			for(const chain in ankrPostfix) {
 				promises.push((async () => {
 					try {
@@ -343,6 +379,7 @@ export default defineComponent({
 				})());
 			}
 			// Tron.
+			/*
 			promises.push((async () => {
 				try {
 					this.setHeight('tron', true, (await (await fetch('https://tron.node.visvirial.com/wallet/getnowblock')).json()).block_header.raw_data.number);
@@ -357,6 +394,7 @@ export default defineComponent({
 					this.setHeight('tron', false, -1);
 				}
 			})());
+			*/
 			await Promise.all(promises);
 			this.lastUpdate = Date.now();
 		},
