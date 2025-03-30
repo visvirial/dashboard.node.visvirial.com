@@ -179,114 +179,10 @@ export default defineComponent({
 					},
 					tolerance: 30,
 					source: {
-						name: 'Ankr',
-						url: 'https://ankr.com/',
+						name: 'PubicNode',
+						url: 'https://publicnode.com/',
 					},
 				},
-				/*
-				polygon: {
-					name: 'Polygon',
-					endpoint: 'https://polygon.node.visvirial.com/',
-					local: {
-						prev: -1,
-						current: -1,
-					},
-					remote: {
-						prev: -1,
-						current: -1,
-					},
-					tolerance: 30,
-					source: {
-						name: 'Ankr',
-						url: 'https://ankr.com/',
-					},
-				},
-				bsc: {
-					name: 'Binance Smart Chain',
-					endpoint: 'https://bsc.node.visvirial.com/',
-					local: {
-						prev: -1,
-						current: -1,
-					},
-					remote: {
-						prev: -1,
-						current: -1,
-					},
-					tolerance: 50,
-					source: {
-						name: 'Ankr',
-						url: 'https://ankr.com/',
-					},
-				},
-				arb: {
-					name: 'Arbitrum',
-					endpoint: 'https://arb.node.visvirial.com/',
-					local: {
-						prev: -1,
-						current: -1,
-					},
-					remote: {
-						prev: -1,
-						current: -1,
-					},
-					tolerance: 50,
-					source: {
-						name: 'Ankr',
-						url: 'https://ankr.com/',
-					},
-				},
-				op: {
-					name: 'Optimism',
-					endpoint: 'https://op.node.visvirial.com/',
-					local: {
-						prev: -1,
-						current: -1,
-					},
-					remote: {
-						prev: -1,
-						current: -1,
-					},
-					tolerance: 50,
-					source: {
-						name: 'Ankr',
-						url: 'https://ankr.com/',
-					},
-				},
-				avax: {
-					name: 'Avalanche',
-					endpoint: 'https://avax.node.visvirial.com/',
-					local: {
-						prev: -1,
-						current: -1,
-					},
-					remote: {
-						prev: -1,
-						current: -1,
-					},
-					tolerance: 50,
-					source: {
-						name: 'Ankr',
-						url: 'https://ankr.com/',
-					},
-				},
-				tron: {
-					name: 'Tron',
-					endpoint: 'https://tron.node.visvirial.com/',
-					local: {
-						prev: -1,
-						current: -1,
-					},
-					remote: {
-						prev: -1,
-						current: -1,
-					},
-					tolerance: 100,
-					source: {
-						name: 'TRONSCAN',
-						url: 'https://tronscan.org/',
-					},
-				},
-				*/
 			},
 		};
 	},
@@ -350,17 +246,10 @@ export default defineComponent({
 				})());
 			}
 			// EVM.
-			const ankrPostfix: { [chain: string]: string } = {
-				eth: 'eth',
-				/*
-				polygon: 'polygon',
-				bsc: 'bsc',
-				arb: 'arbitrum',
-				op: 'optimism',
-				avax: 'avalanche',
-				*/
+			const publicNode: { [chain: string]: string } = {
+				eth: 'https://ethereum.publicnode.com',
 			};
-			for(const chain in ankrPostfix) {
+			for(const chain in publicNode) {
 				promises.push((async () => {
 					try {
 						const providerLocal = new ethers.JsonRpcProvider(`https://${chain}.node.visvirial.com/` + (chain === 'avax' ? 'ext/bc/C/rpc' : ''));
@@ -371,7 +260,7 @@ export default defineComponent({
 				})());
 				promises.push((async () => {
 					try {
-						const providerRemote = new ethers.JsonRpcProvider(`https://rpc.ankr.com/${ankrPostfix[chain]}`);
+						const providerRemote = new ethers.JsonRpcProvider(publicNode[chain]);
 						this.setHeight(chain, false, await providerRemote.getBlockNumber());
 					} catch (e) {
 						this.setHeight(chain, false, -1);
